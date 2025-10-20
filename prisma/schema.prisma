@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String?
+  role      String   @default("user")
+  createdAt DateTime @default(now())
+}
+model Startup {
+  id        Int      @id @default(autoincrement())
+  name      String
+  batch     String?
+  status    String   @default("active")
+  mentorId  Int?
+  mentor    User?    @relation(fields: [mentorId], references: [id])
+  createdAt DateTime @default(now())
+}
+model Mentoria {
+  id         Int      @id @default(autoincrement())
+  startupId  Int
+  mentorId   Int
+  date       DateTime
+  notes      String?
+  startup    Startup  @relation(fields: [startupId], references: [id])
+  mentor     User     @relation(fields: [mentorId], references: [id])
+}
+model Evento {
+  id           Int      @id @default(autoincrement())
+  title        String
+  description  String?
+  date         DateTime
+  location     String?
+  qrCode       String?
+  createdAt    DateTime @default(now())
+}
+model Presenca {
+  id        Int      @id @default(autoincrement())
+  eventoId  Int
+  userId    Int
+  timestamp DateTime @default(now())
+  evento    Evento   @relation(fields: [eventoId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+}
