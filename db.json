@@ -1,0 +1,6 @@
+{
+  "trees": [
+    { "id": 1, "name": "Carvalho", "plantedBy": "Arthur" },
+    { "id": 2, "name": "Ipê Amarelo", "plantedBy": "Bruna" }
+  ]
+}
