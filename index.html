@@ -1,0 +1,1958 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grupo Conecta — Commercial Intelligence</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap"
+    rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'gc-dark': '#060b14', 'gc-panel': '#0d1520', 'gc-card': '#111d2e', 'gc-border': '#1e3048',
+            'gc-blue': '#0ea5e9', 'gc-blue2': '#38bdf8', 'gc-gold': '#f59e0b',
+            'gc-green': '#10b981', 'gc-red': '#ef4444', 'gc-purple': '#8b5cf6',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #060b14;
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    h1,
+    h2,
+    h3,
+    .syne {
+      font-family: 'Syne', sans-serif;
+    }
+
+    .mono {
+      font-family: 'DM Mono', monospace;
+    }
+
+    /* Grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: linear-gradient(rgba(14, 165, 233, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(14, 165, 233, 0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── LOGIN ───────────────────────────────── */
+    @keyframes orbit {
+      from {
+        transform: rotate(0deg) translateX(140px) rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg) translateX(140px) rotate(-360deg);
+      }
+    }
+
+    @keyframes orbit2 {
+      from {
+        transform: rotate(120deg) translateX(200px) rotate(-120deg);
+      }
+
+      to {
+        transform: rotate(480deg) translateX(200px) rotate(-480deg);
+      }
+    }
+
+    @keyframes orbit3 {
+      from {
+        transform: rotate(240deg) translateX(170px) rotate(-240deg);
+      }
+
+      to {
+        transform: rotate(600deg) translateX(170px) rotate(-600deg);
+      }
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    @keyframes shimmer {
+
+      0%,
+      100% {
+        opacity: .4
+      }
+
+      50% {
+        opacity: 1
+      }
+    }
+
+    @keyframes rotateBg {
+      from {
+        transform: rotate(0deg)
+      }
+
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    @keyframes glow-pulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 20px rgba(14, 165, 233, .3)
+      }
+
+      50% {
+        box-shadow: 0 0 50px rgba(14, 165, 233, .7), 0 0 80px rgba(14, 165, 233, .2)
+      }
+    }
+
+    @keyframes borderFlow {
+      0% {
+        background-position: 0 0
+      }
+
+      100% {
+        background-position: 300% 0
+      }
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0)
+      }
+
+      50% {
+        transform: translateY(-8px)
+      }
+    }
+
+    @keyframes scanLine {
+      0% {
+        transform: translateY(-100vh)
+      }
+
+      100% {
+        transform: translateY(100vh)
+      }
+    }
+
+    @keyframes particleFall {
+      0% {
+        opacity: 0;
+        transform: translateY(-20px)
+      }
+
+      10% {
+        opacity: 1
+      }
+
+      90% {
+        opacity: .5
+      }
+
+      100% {
+        opacity: 0;
+        transform: translateY(100vh)
+      }
+    }
+
+    .login-bg {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      background: radial-gradient(ellipse at 20% 50%, rgba(14, 165, 233, 0.12) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 20%, rgba(139, 92, 246, 0.10) 0%, transparent 50%),
+        radial-gradient(ellipse at 60% 80%, rgba(245, 158, 11, 0.06) 0%, transparent 40%),
+        #060b14;
+    }
+
+    .login-orb {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      transform-origin: 0 0;
+      margin: -5px 0 0 -5px;
+    }
+
+    .login-orb-1 {
+      background: #0ea5e9;
+      box-shadow: 0 0 12px #0ea5e9;
+      animation: orbit 8s linear infinite;
+    }
+
+    .login-orb-2 {
+      background: #8b5cf6;
+      box-shadow: 0 0 12px #8b5cf6;
+      animation: orbit2 12s linear infinite;
+    }
+
+    .login-orb-3 {
+      background: #f59e0b;
+      box-shadow: 0 0 10px #f59e0b;
+      animation: orbit3 10s linear infinite;
+    }
+
+    .login-ring {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      border-radius: 50%;
+      border: 1px solid rgba(14, 165, 233, 0.12);
+      transform: translate(-50%, -50%);
+    }
+
+    .login-card {
+      background: linear-gradient(145deg, rgba(17, 29, 46, 0.95) 0%, rgba(13, 21, 32, 0.98) 100%);
+      border: 1px solid rgba(30, 48, 72, 0.8);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      animation: fadeUp .7s ease forwards;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #0ea5e9, #8b5cf6, #f59e0b, transparent);
+      background-size: 300% 100%;
+      animation: borderFlow 3s linear infinite;
+    }
+
+    .login-input {
+      background: rgba(6, 11, 20, 0.7);
+      border: 1px solid #1e3048;
+      color: #fff;
+      border-radius: 12px;
+      padding: 14px 16px 14px 46px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      width: 100%;
+      transition: all .3s;
+      outline: none;
+    }
+
+    .login-input:focus {
+      border-color: #0ea5e9;
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, .15);
+      background: rgba(6, 11, 20, 0.9);
+    }
+
+    .login-input::placeholder {
+      color: #4b5563;
+    }
+
+    .login-btn {
+      background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 50%, #8b5cf6 100%);
+      background-size: 200% 100%;
+      background-position: 0 0;
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-family: 'Syne', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      padding: 15px;
+      width: 100%;
+      cursor: pointer;
+      transition: all .3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-btn:hover {
+      background-position: 100% 0;
+      box-shadow: 0 8px 30px rgba(14, 165, 233, .4);
+      transform: translateY(-1px);
+    }
+
+    .login-btn:active {
+      transform: translateY(0);
+    }
+
+    .login-btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .1), transparent);
+      transform: translateX(-100%);
+      transition: transform .5s;
+    }
+
+    .login-btn:hover::after {
+      transform: translateX(100%);
+    }
+
+    .login-err {
+      background: rgba(239, 68, 68, .1);
+      border: 1px solid rgba(239, 68, 68, .3);
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: #ef4444;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      animation: fadeUp .3s ease;
+    }
+
+    /* Particles */
+    .particle {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      border-radius: 50%;
+      background: #0ea5e9;
+      animation: particleFall linear infinite;
+    }
+
+    /* Scan line */
+    .scan-beam {
+      position: fixed;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(14, 165, 233, .5), transparent);
+      animation: scanLine 8s linear infinite;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* ── TRANSITION ANIMATION ───────────────── */
+    @keyframes loginExit {
+      0% {
+        opacity: 1;
+        transform: scale(1);
+        filter: blur(0px);
+      }
+
+      40% {
+        opacity: 1;
+        transform: scale(1.04);
+        filter: blur(0px);
+      }
+
+      100% {
+        opacity: 0;
+        transform: scale(1.12);
+        filter: blur(18px);
+      }
+    }
+
+    @keyframes bootOverlayIn {
+      0% {
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 1;
+      }
+
+      100% {
+        opacity: 1;
+      }
+    }
+
+    @keyframes bootOverlayOut {
+      0% {
+        opacity: 1;
+      }
+
+      100% {
+        opacity: 0;
+      }
+    }
+
+    @keyframes bootLogoIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.6) translateY(20px);
+        filter: blur(8px);
+      }
+
+      60% {
+        opacity: 1;
+        transform: scale(1.05) translateY(0);
+        filter: blur(0);
+      }
+
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+        filter: blur(0);
+      }
+    }
+
+    @keyframes bootBarFill {
+      0% {
+        width: 0%;
+      }
+
+      20% {
+        width: 15%;
+      }
+
+      40% {
+        width: 42%;
+      }
+
+      60% {
+        width: 67%;
+      }
+
+      80% {
+        width: 88%;
+      }
+
+      100% {
+        width: 100%;
+      }
+    }
+
+    @keyframes bootTextBlink {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0;
+      }
+    }
+
+    @keyframes bootLineSlide {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes bootRingExpand {
+      0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: .8;
+      }
+
+      100% {
+        transform: translate(-50%, -50%) scale(3.5);
+        opacity: 0;
+      }
+    }
+
+    @keyframes bootSweep {
+      0% {
+        transform: translateX(-100%);
+        opacity: .6;
+      }
+
+      100% {
+        transform: translateX(100vw);
+        opacity: 0;
+      }
+    }
+
+    @keyframes dashIn {
+      0% {
+        opacity: 0;
+        transform: translateY(24px) scale(0.98);
+        filter: blur(4px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+      }
+    }
+
+    .login-exiting {
+      animation: loginExit .6s ease forwards;
+    }
+
+    .boot-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+      background: #060b14;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      animation: bootOverlayIn .3s ease forwards;
+    }
+
+    .boot-overlay.fading-out {
+      animation: bootOverlayOut .7s ease forwards;
+    }
+
+    .boot-logo {
+      animation: bootLogoIn .6s cubic-bezier(.34, 1.56, .64, 1) .2s both;
+    }
+
+    .boot-bar-track {
+      width: 320px;
+      height: 3px;
+      border-radius: 99px;
+      background: rgba(14, 165, 233, 0.15);
+      overflow: hidden;
+      margin-top: 32px;
+    }
+
+    .boot-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, #0ea5e9, #8b5cf6, #38bdf8);
+      background-size: 200% 100%;
+      animation: bootBarFill 2s cubic-bezier(.4, 0, .2, 1) forwards,
+        borderFlow 1s linear infinite;
+    }
+
+    .boot-ring {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 1px solid rgba(14, 165, 233, .5);
+      animation: bootRingExpand 1.2s ease-out forwards;
+    }
+
+    .boot-ring-2 {
+      animation-delay: .3s;
+      border-color: rgba(139, 92, 246, .4);
+      animation: bootRingExpand 1.2s ease-out .3s forwards;
+    }
+
+    .boot-ring-3 {
+      animation-delay: .6s;
+      border-color: rgba(245, 158, 11, .3);
+      animation: bootRingExpand 1.2s ease-out .6s forwards;
+    }
+
+    .boot-sweep {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 200px;
+      background: linear-gradient(90deg, transparent, rgba(14, 165, 233, 0.06), transparent);
+      animation: bootSweep 1.5s ease-out 0.5s forwards;
+    }
+
+    .boot-line {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: #2d5a7a;
+      opacity: 0;
+      animation: bootLineSlide .3s ease forwards;
+    }
+
+    .boot-line.ok {
+      color: #10b981;
+    }
+
+    .boot-line.warn {
+      color: #f59e0b;
+    }
+
+    .dash-entering {
+      animation: dashIn .8s cubic-bezier(.34, 1.1, .64, 1) forwards;
+    }
+
+    /* ── DASHBOARD ───────────────────────────── */
+    .glow-blue {
+      box-shadow: 0 0 24px rgba(14, 165, 233, 0.35);
+    }
+
+    .glow-green {
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.25);
+    }
+
+    .stat-card {
+      background: linear-gradient(145deg, #111d2e 0%, #0d1520 100%);
+      border: 1px solid #1e3048;
+      transition: all .3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent, #0ea5e9), transparent);
+    }
+
+    .stat-card:hover {
+      transform: translateY(-3px);
+      border-color: #0ea5e9;
+      box-shadow: 0 8px 32px rgba(14, 165, 233, .2);
+    }
+
+    .panel {
+      background: linear-gradient(145deg, #111d2e 0%, #0d1520 100%);
+      border: 1px solid #1e3048;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #111d2e;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #1e3048;
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #0ea5e9;
+    }
+
+    @keyframes pulse-dot {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .4
+      }
+    }
+
+    @keyframes float-in {
+      from {
+        opacity: 0;
+        transform: translateY(16px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    @keyframes ticker {
+      0% {
+        transform: translateX(0)
+      }
+
+      100% {
+        transform: translateX(-50%)
+      }
+    }
+
+    @keyframes headerFlow {
+      0% {
+        background-position: 0 0
+      }
+
+      100% {
+        background-position: 200% 0
+      }
+    }
+
+    .pulse-dot {
+      animation: pulse-dot 2s infinite;
+    }
+
+    .float-in {
+      animation: float-in .5s ease forwards;
+    }
+
+    .drop-zone {
+      border: 2px dashed #1e3048;
+      transition: all .3s;
+      cursor: pointer;
+    }
+
+    .drop-zone:hover,
+    .drop-zone.dz-active {
+      border-color: #0ea5e9;
+      background: rgba(14, 165, 233, .06);
+    }
+
+    .ticker-wrap {
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .ticker-inner {
+      display: inline-block;
+      animation: ticker 45s linear infinite;
+    }
+
+    .leaflet-container {
+      background: #0d1520 !important;
+      border-radius: 10px;
+    }
+
+    .trow:hover {
+      background: rgba(14, 165, 233, .06);
+    }
+
+    .header-line {
+      height: 2px;
+      background: linear-gradient(90deg, #0ea5e9, #8b5cf6, #f59e0b, #0ea5e9);
+      background-size: 200% 100%;
+      animation: headerFlow 4s linear infinite;
+    }
+
+    .badge {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-family: 'DM Mono', monospace;
+      font-weight: 500;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(6px);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 2000;
+      animation: float-in .3s ease;
+    }
+
+    .nav-item {
+      transition: all .2s;
+    }
+
+    .nav-item:hover {
+      background: rgba(14, 165, 233, .1);
+      color: #38bdf8;
+    }
+
+    .nav-item.active {
+      background: rgba(14, 165, 233, .15);
+      color: #38bdf8;
+      border-left: 2px solid #0ea5e9;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    /* ── Auth ──────────────────────────────── */
+    const USERS = [
+      { username: 'conecta', password: 'GrupoConecta@2025', name: 'Admin Conecta', role: 'Administrador' },
+      { username: 'comercial', password: 'Comercial#2025', name: 'Equipe Comercial', role: 'Consultor Comercial' },
+    ];
+
+    /* ── Helpers ───────────────────────────── */
+    const COUNTRY_COORDS = {
+      'US': [37.09, -95.71], 'BR': [-14.23, -51.93], 'GB': [55.38, -3.44], 'DE': [51.17, 10.45],
+      'FR': [46.23, 2.21], 'IT': [41.87, 12.57], 'ES': [40.46, -3.75], 'PT': [39.40, -8.22],
+      'AR': [-38.42, -63.62], 'MX': [23.63, -102.55], 'CO': [4.57, -74.30], 'CL': [-35.68, -71.54],
+      'CA': [56.13, -106.35], 'AU': [-25.27, 133.78], 'JP': [36.20, 138.25], 'CN': [35.86, 104.20],
+      'IN': [20.59, 78.96], 'SG': [1.35, 103.82], 'AE': [23.42, 53.85], 'ZA': [-30.56, 22.94],
+      'NL': [52.13, 5.29], 'BE': [50.50, 4.47], 'SE': [60.13, 18.64], 'CH': [46.82, 8.23],
+    };
+    const FLAG = cc => !cc ? '🌍' :
+      String.fromCodePoint(...cc.toUpperCase().split('').map(c => 127397 + c.charCodeAt(0)));
+    const fmtNum = n => (n || 0).toLocaleString('pt-BR');
+    const fmtCur = n => (n || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    const fmtPct = n => `${(n || 0).toFixed(1)}%`;
+
+    /* ── Demo data — 2025/2026 dates ─────────── */
+    function generateDemo() {
+      const countries = [
+        { code: 'US', name: 'United States', clients: 142, revenue: 4820000, deals: 38, growth: 12.4 },
+        { code: 'BR', name: 'Brasil', clients: 98, revenue: 2140000, deals: 24, growth: 8.7 },
+        { code: 'GB', name: 'United Kingdom', clients: 67, revenue: 3290000, deals: 19, growth: 15.2 },
+        { code: 'DE', name: 'Germany', clients: 54, revenue: 2870000, deals: 15, growth: 6.3 },
+        { code: 'FR', name: 'France', clients: 43, revenue: 1980000, deals: 12, growth: 9.1 },
+        { code: 'AE', name: 'UAE', clients: 29, revenue: 5100000, deals: 9, growth: 22.7 },
+        { code: 'AU', name: 'Australia', clients: 26, revenue: 2340000, deals: 8, growth: 11.3 },
+        { code: 'CA', name: 'Canada', clients: 24, revenue: 1920000, deals: 7, growth: 7.6 },
+        { code: 'JP', name: 'Japan', clients: 21, revenue: 3100000, deals: 6, growth: 5.2 },
+        { code: 'ES', name: 'Spain', clients: 38, revenue: 1450000, deals: 11, growth: 4.8 },
+      ];
+      const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+      const monthly = months.map((m, i) => ({
+        month: m,
+        revenue: 1800000 + Math.sin(i * .6) * 400000 + i * 120000 + (Math.random() * 200000),
+        deals: 8 + Math.round(Math.sin(i * .5) * 3 + i * .4 + (Math.random() * 4)),
+      }));
+      const segments = [
+        { name: 'Enterprise', value: 38, color: '#0ea5e9' }, { name: 'Mid-Market', value: 29, color: '#8b5cf6' },
+        { name: 'SMB', value: 21, color: '#f59e0b' }, { name: 'Startup', value: 12, color: '#10b981' },
+      ];
+      const deals = [
+        { id: 'GC-2601', client: 'Petroval S.A.', country: 'AE', country_name: 'UAE', value: 820000, status: 'closed', rep: 'Ana Souza', date: '2026-03-10', segment: 'Enterprise' },
+        { id: 'GC-2602', client: 'Nordic Freight AB', country: 'SE', country_name: 'Sweden', value: 340000, status: 'negotiation', rep: 'Carlos Melo', date: '2026-03-08', segment: 'Mid-Market' },
+        { id: 'GC-2603', client: 'Pacific Rim Trading', country: 'AU', country_name: 'Australia', value: 290000, status: 'proposal', rep: 'Juliana Costa', date: '2026-03-05', segment: 'Mid-Market' },
+        { id: 'GC-2604', client: 'Grupo Andino SRL', country: 'AR', country_name: 'Argentina', value: 175000, status: 'closed', rep: 'Diego Vargas', date: '2026-02-28', segment: 'SMB' },
+        { id: 'GC-2605', client: 'AlphaLogistics GmbH', country: 'DE', country_name: 'Germany', value: 560000, status: 'closed', rep: 'Ana Souza', date: '2026-02-20', segment: 'Enterprise' },
+        { id: 'GC-2606', client: 'BrightPath UK Ltd', country: 'GB', country_name: 'United Kingdom', value: 480000, status: 'negotiation', rep: 'Marcos Lima', date: '2026-02-14', segment: 'Enterprise' },
+        { id: 'GC-2607', client: 'Sunrise Exports', country: 'IN', country_name: 'India', value: 125000, status: 'proposal', rep: 'Carlos Melo', date: '2026-02-07', segment: 'SMB' },
+        { id: 'GC-2608', client: 'Magellan Corp', country: 'US', country_name: 'United States', value: 920000, status: 'closed', rep: 'Juliana Costa', date: '2026-01-31', segment: 'Enterprise' },
+        { id: 'GC-2609', client: 'Carrefour Intl', country: 'FR', country_name: 'France', value: 310000, status: 'closed', rep: 'Diego Vargas', date: '2026-01-22', segment: 'Mid-Market' },
+        { id: 'GC-2610', client: 'TechVentures PE', country: 'BR', country_name: 'Brasil', value: 195000, status: 'negotiation', rep: 'Marcos Lima', date: '2026-01-15', segment: 'Mid-Market' },
+        { id: 'GC-2511', client: 'OmniTrade FZCO', country: 'AE', country_name: 'UAE', value: 740000, status: 'closed', rep: 'Ana Souza', date: '2025-12-18', segment: 'Enterprise' },
+        { id: 'GC-2512', client: 'Frontier Capital', country: 'CA', country_name: 'Canada', value: 410000, status: 'closed', rep: 'Juliana Costa', date: '2025-12-05', segment: 'Mid-Market' },
+      ];
+      const reps = [
+        { name: 'Ana Souza', deals: 14, revenue: 2840000, win_rate: 71.4 },
+        { name: 'Juliana Costa', deals: 13, revenue: 2560000, win_rate: 69.2 },
+        { name: 'Carlos Melo', deals: 11, revenue: 1920000, win_rate: 63.6 },
+        { name: 'Marcos Lima', deals: 10, revenue: 1780000, win_rate: 60.0 },
+        { name: 'Diego Vargas', deals: 9, revenue: 1450000, win_rate: 55.6 },
+      ];
+      return {
+        countries, monthly, segments, deals, reps,
+        kpis: { total_revenue: 29040000, total_clients: 542, open_deals: 63, closed_ytd: 149, avg_deal: 194900, conversion_rate: 34.2, total_countries: 28, nps: 72 }
+      };
+    }
+
+    function parseExcelFile(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          try {
+            const wb = XLSX.read(e.target.result, { type: 'array' });
+            const sheets = {};
+            wb.SheetNames.forEach(n => { sheets[n] = XLSX.utils.sheet_to_json(wb.Sheets[n], { defval: '' }); });
+            resolve(sheets);
+          } catch (err) { reject(err); }
+        };
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(file);
+      });
+    }
+
+    /* ══════════════════════════════════════════
+       LOGIN SCREEN
+    ══════════════════════════════════════════ */
+    function LoginScreen({ onLogin }) {
+      const [user, setUser] = useState('');
+      const [pass, setPass] = useState('');
+      const [showPass, setShowPass] = useState(false);
+      const [err, setErr] = useState('');
+      const [loading, setLoading] = useState(false);
+      const [focused, setFocused] = useState('');
+
+      const handleLogin = async e => {
+        e && e.preventDefault();
+        if (!user || !pass) { setErr('Preencha usuário e senha.'); return; }
+        setLoading(true); setErr('');
+        await new Promise(r => setTimeout(r, 1000)); // simulated auth delay
+        const found = USERS.find(u => u.username === user && u.password === pass);
+        if (found) { onLogin(found); }
+        else { setErr('Usuário ou senha inválidos.'); setLoading(false); }
+      };
+
+      // Generate particles
+      const particles = Array.from({ length: 20 }, (_, i) => ({
+        id: i,
+        left: `${Math.random() * 100}%`,
+        delay: `${Math.random() * 15}s`,
+        duration: `${10 + Math.random() * 20}s`,
+        size: Math.random() > 0.7 ? 3 : 2,
+        opacity: 0.3 + Math.random() * 0.5,
+      }));
+
+      return (
+        <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
+          {/* Animated background */}
+          <div className="login-bg">
+            {/* Rings */}
+            {[280, 400, 520, 640].map((s, i) => (
+              <div key={i} className="login-ring" style={{ width: s, height: s, opacity: 0.5 - (i * .08) }}></div>
+            ))}
+            {/* Orbiting dots */}
+            <div className="login-orb login-orb-1"></div>
+            <div className="login-orb login-orb-2"></div>
+            <div className="login-orb login-orb-3"></div>
+            {/* Particles */}
+            {particles.map(p => (
+              <div key={p.id} className="particle" style={{
+                left: p.left, top: '-10px', width: p.size, height: p.size,
+                opacity: p.opacity, animationDelay: p.delay, animationDuration: p.duration,
+                background: p.id % 3 === 0 ? '#8b5cf6' : p.id % 2 === 0 ? '#f59e0b' : '#0ea5e9'
+              }}></div>
+            ))}
+            {/* Large background glow blobs */}
+            <div style={{ position: 'absolute', top: '10%', left: '5%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle,rgba(14,165,233,0.07) 0%,transparent 70%)' }}></div>
+            <div style={{ position: 'absolute', bottom: '10%', right: '5%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle,rgba(139,92,246,0.07) 0%,transparent 70%)' }}></div>
+          </div>
+
+          {/* Scan beam */}
+          <div className="scan-beam"></div>
+
+          {/* Login card */}
+          <div className="login-card" style={{ width: '100%', maxWidth: 440, padding: '48px 40px', zIndex: 10 }}>
+
+            {/* Logo area */}
+            <div style={{ textAlign: 'center', marginBottom: 40 }}>
+              <div style={{
+                width: 72, height: 72, borderRadius: 20, margin: '0 auto 20px',
+                background: 'linear-gradient(135deg,#0ea5e9,#3b82f6,#8b5cf6)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 0 40px rgba(14,165,233,0.5),0 0 80px rgba(14,165,233,0.15)',
+                animation: 'float 4s ease-in-out infinite',
+                position: 'relative'
+              }}>
+                <i className="fas fa-network-wired" style={{ color: '#fff', fontSize: 30 }}></i>
+                {/* Ping ring */}
+                <div style={{
+                  position: 'absolute', inset: -4, borderRadius: 24,
+                  border: '1px solid rgba(14,165,233,0.4)',
+                  animation: 'glow-pulse 3s infinite'
+                }}></div>
+              </div>
+              <h1 className="syne" style={{ color: '#fff', fontSize: 28, fontWeight: 800, letterSpacing: '0.04em', lineHeight: 1 }}>
+                GRUPO <span style={{ color: '#0ea5e9' }}>CONECTA</span>
+              </h1>
+              <p style={{ color: '#4b6080', fontSize: 13, marginTop: 8, letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: "'DM Mono',monospace" }}>
+                Commercial Intelligence Platform
+              </p>
+              <div style={{
+                width: 60, height: 2, margin: '16px auto 0', borderRadius: 2,
+                background: 'linear-gradient(90deg,transparent,#0ea5e9,transparent)'
+              }}></div>
+            </div>
+
+            {/* Form */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {/* Username */}
+              <div style={{ position: 'relative' }}>
+                <i className="fas fa-user" style={{
+                  position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)',
+                  color: focused === 'user' ? '#0ea5e9' : '#374151', fontSize: 14, transition: 'color .3s', zIndex: 1
+                }}></i>
+                <input
+                  className="login-input"
+                  type="text"
+                  placeholder="Usuário"
+                  value={user}
+                  onChange={e => { setUser(e.target.value); setErr(''); }}
+                  onFocus={() => setFocused('user')}
+                  onBlur={() => setFocused('')}
+                  onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                  autoComplete="username"
+                />
+              </div>
+
+              {/* Password */}
+              <div style={{ position: 'relative' }}>
+                <i className="fas fa-lock" style={{
+                  position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)',
+                  color: focused === 'pass' ? '#0ea5e9' : '#374151', fontSize: 14, transition: 'color .3s', zIndex: 1
+                }}></i>
+                <input
+                  className="login-input"
+                  type={showPass ? 'text' : 'password'}
+                  placeholder="Senha"
+                  value={pass}
+                  onChange={e => { setPass(e.target.value); setErr(''); }}
+                  onFocus={() => setFocused('pass')}
+                  onBlur={() => setFocused('')}
+                  onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                  autoComplete="current-password"
+                  style={{ paddingRight: 46 }}
+                />
+                <button
+                  onClick={() => setShowPass(!showPass)}
+                  style={{
+                    position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
+                    background: 'none', border: 'none', color: '#374151', cursor: 'pointer', padding: 4, transition: 'color .2s'
+                  }}
+                  onMouseEnter={e => e.target.style.color = '#0ea5e9'}
+                  onMouseLeave={e => e.target.style.color = '#374151'}>
+                  <i className={`fas ${showPass ? 'fa-eye-slash' : 'fa-eye'}`} style={{ fontSize: 14 }}></i>
+                </button>
+              </div>
+
+              {/* Error */}
+              {err && (
+                <div className="login-err">
+                  <i className="fas fa-exclamation-circle"></i> {err}
+                </div>
+              )}
+
+              {/* Button */}
+              <button className="login-btn" onClick={handleLogin} disabled={loading} style={{ marginTop: 8 }}>
+                {loading ? (
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                    <i className="fas fa-spinner fa-spin"></i> Autenticando...
+                  </span>
+                ) : (
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                    <i className="fas fa-shield-halved"></i> ENTRAR
+                  </span>
+                )}
+              </button>
+            </div>
+
+            {/* Hint */}
+            <div style={{
+              marginTop: 28, padding: '14px 16px',
+              background: 'rgba(14,165,233,0.05)',
+              border: '1px solid rgba(14,165,233,0.15)',
+              borderRadius: 12
+            }}>
+              <p style={{ color: '#4b6080', fontSize: 12, textAlign: 'center', lineHeight: 1.8, fontFamily: "'DM Mono',monospace" }}>
+                <i className="fas fa-key" style={{ color: '#0ea5e9', marginRight: 6 }}></i>
+                <span style={{ color: '#6b7280' }}>usuário: </span><span style={{ color: '#38bdf8' }}>conecta</span>
+                &nbsp;·&nbsp;
+                <span style={{ color: '#6b7280' }}>senha: </span><span style={{ color: '#38bdf8' }}>GrupoConecta@2025</span>
+              </p>
+            </div>
+
+            {/* Footer */}
+            <p style={{ color: '#1e3048', fontSize: 11, textAlign: 'center', marginTop: 24, fontFamily: "'DM Mono',monospace" }}>
+              © 2025 Grupo Conecta · Arthur &amp; Rayan
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    /* ══════════════════════════════════════════
+       DASHBOARD COMPONENTS
+    ══════════════════════════════════════════ */
+    function KPICard({ title, value, icon, accent, sub, trend }) {
+      const c = { blue: '#0ea5e9', gold: '#f59e0b', green: '#10b981', purple: '#8b5cf6', red: '#ef4444' }[accent] || '#0ea5e9';
+      return (
+        <div className="stat-card rounded-xl p-5" style={{ '--accent': c }}>
+          <div className="flex items-start justify-between">
+            <div className="flex-1 min-w-0">
+              <p className="text-gray-400 text-xs uppercase tracking-widest mb-1">{title}</p>
+              <p className="text-2xl font-bold text-white syne truncate">{value}</p>
+              {sub && <p className="text-xs text-gray-500 mt-1">{sub}</p>}
+            </div>
+            <div className="w-11 h-11 rounded-lg flex items-center justify-center ml-3 flex-shrink-0"
+              style={{ background: `${c}22`, border: `1px solid ${c}44` }}>
+              <i className={`${icon} text-lg`} style={{ color: c }}></i>
+            </div>
+          </div>
+          {trend !== undefined && (
+            <div className="mt-3 flex items-center gap-1">
+              <i className={`fas fa-caret-${trend >= 0 ? 'up text-gc-green' : 'down text-gc-red'} text-xs`}></i>
+              <span className={`text-xs mono ${trend >= 0 ? 'text-gc-green' : 'text-gc-red'}`}>
+                {Math.abs(trend).toFixed(1)}% vs mês anterior
+              </span>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function WorldMap({ countries }) {
+      const mapRef = useRef(null); const mapInst = useRef(null);
+      useEffect(() => {
+        if (!mapRef.current || mapInst.current) return;
+        mapInst.current = L.map(mapRef.current, { center: [20, 10], zoom: 2, zoomControl: true, attributionControl: false });
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(mapInst.current);
+        return () => { if (mapInst.current) { mapInst.current.remove(); mapInst.current = null; } };
+      }, []);
+      useEffect(() => {
+        if (!mapInst.current || !countries?.length) return;
+        mapInst.current.eachLayer(l => { if (l instanceof L.CircleMarker) mapInst.current.removeLayer(l); });
+        const maxR = Math.max(...countries.map(c => c.revenue || 0), 1);
+        countries.forEach(c => {
+          const coords = COUNTRY_COORDS[c.code]; if (!coords) return;
+          const ratio = (c.revenue || 0) / maxR;
+          const marker = L.circleMarker(coords, {
+            radius: 6 + ratio * 22, fillColor: `hsl(${200 + ratio * 60},85%,${40 + ratio * 20}%)`,
+            color: '#fff', weight: 1, opacity: .8, fillOpacity: .75
+          });
+          marker.bindTooltip(
+            `<div style="font-family:Inter;font-size:12px;color:#fff;background:#111d2e;padding:8px 12px;border-radius:8px;border:1px solid #1e3048">
+          <strong>${FLAG(c.code)} ${c.name}</strong><br/>
+          <span style="color:#0ea5e9">Receita: ${fmtCur(c.revenue)}</span><br/>
+          <span style="color:#9ca3af">${c.clients} clientes · ${c.deals} negócios</span>
+        </div>`,
+            { className: '', direction: 'top', opacity: 1 }
+          );
+          marker.addTo(mapInst.current);
+        });
+      }, [countries]);
+      return (
+        <div className="panel rounded-xl p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-white syne flex items-center gap-2">
+              <i className="fas fa-globe text-gc-blue"></i> Presença Global de Clientes
+            </h3>
+            <div className="flex items-center gap-3 text-xs text-gray-400">
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-600 inline-block"></span>Baixo</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-400 inline-block"></span>Médio</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-cyan-300 inline-block"></span>Alto</span>
+            </div>
+          </div>
+          <div ref={mapRef} style={{ height: 310 }} className="rounded-lg overflow-hidden"></div>
+        </div>
+      );
+    }
+
+    function RevenueChart({ data }) {
+      const canvasRef = useRef(null); const chartRef = useRef(null);
+      useEffect(() => {
+        if (!canvasRef.current || !data?.length) return;
+        if (chartRef.current) chartRef.current.destroy();
+        const ctx = canvasRef.current.getContext('2d');
+        const grad = ctx.createLinearGradient(0, 0, 0, 250);
+        grad.addColorStop(0, 'rgba(14,165,233,0.35)'); grad.addColorStop(1, 'rgba(14,165,233,0)');
+        chartRef.current = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: data.map(d => d.month),
+            datasets: [{
+              label: 'Receita', data: data.map(d => d.revenue),
+              borderColor: '#0ea5e9', backgroundColor: grad, borderWidth: 2, fill: true, tension: .4,
+              pointBackgroundColor: '#0ea5e9', pointBorderColor: '#060b14', pointRadius: 4, pointHoverRadius: 7
+            }, {
+              label: 'Negócios', data: data.map(d => d.deals * 60000),
+              borderColor: '#8b5cf6', backgroundColor: 'transparent', borderWidth: 2, fill: false, tension: .4,
+              pointBackgroundColor: '#8b5cf6', pointBorderColor: '#060b14', pointRadius: 3, borderDash: [4, 4]
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: { labels: { color: '#9ca3af', font: { family: 'Inter', size: 11 } } },
+              tooltip: {
+                backgroundColor: '#111d2e', borderColor: '#1e3048', borderWidth: 1, titleColor: '#fff', bodyColor: '#9ca3af',
+                callbacks: { label: c => c.datasetIndex === 0 ? ` ${fmtCur(c.raw)}` : `  ${Math.round(c.raw / 60000)} negócios` }
+              }
+            },
+            scales: {
+              x: { grid: { color: '#1e3048' }, ticks: { color: '#6b7280', font: { family: 'DM Mono', size: 10 } } },
+              y: { grid: { color: '#1e3048' }, ticks: { color: '#6b7280', font: { family: 'DM Mono', size: 10 }, callback: v => `R$${(v / 1e6).toFixed(1)}M` } }
+            }
+          }
+        });
+        return () => { if (chartRef.current) chartRef.current.destroy(); };
+      }, [data]);
+      return (
+        <div className="panel rounded-xl p-4">
+          <h3 className="text-sm font-semibold text-white syne flex items-center gap-2 mb-4">
+            <i className="fas fa-chart-line text-gc-blue"></i> Receita &amp; Negócios — 2025/2026
+          </h3>
+          <div style={{ height: 240 }}><canvas ref={canvasRef}></canvas></div>
+        </div>
+      );
+    }
+
+    function SegmentChart({ data }) {
+      const canvasRef = useRef(null); const chartRef = useRef(null);
+      useEffect(() => {
+        if (!canvasRef.current || !data?.length) return;
+        if (chartRef.current) chartRef.current.destroy();
+        chartRef.current = new Chart(canvasRef.current.getContext('2d'), {
+          type: 'doughnut',
+          data: {
+            labels: data.map(d => d.name),
+            datasets: [{ data: data.map(d => d.value), backgroundColor: data.map(d => d.color), borderColor: '#0d1520', borderWidth: 3 }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'right', labels: { color: '#9ca3af', padding: 14, font: { family: 'Inter', size: 12 } } },
+              tooltip: {
+                backgroundColor: '#111d2e', borderColor: '#1e3048', borderWidth: 1, titleColor: '#fff', bodyColor: '#9ca3af',
+                callbacks: { label: c => ` ${c.label}: ${c.raw}%` }
+              }
+            },
+            cutout: '65%'
+          }
+        });
+        return () => { if (chartRef.current) chartRef.current.destroy(); };
+      }, [data]);
+      return (
+        <div className="panel rounded-xl p-4">
+          <h3 className="text-sm font-semibold text-white syne flex items-center gap-2 mb-4">
+            <i className="fas fa-chart-pie text-gc-purple"></i> Segmentos de Clientes
+          </h3>
+          <div style={{ height: 200 }}><canvas ref={canvasRef}></canvas></div>
+        </div>
+      );
+    }
+
+    function CountryBar({ countries }) {
+      const canvasRef = useRef(null); const chartRef = useRef(null);
+      useEffect(() => {
+        if (!canvasRef.current || !countries?.length) return;
+        if (chartRef.current) chartRef.current.destroy();
+        const top = [...countries].sort((a, b) => b.revenue - a.revenue).slice(0, 8);
+        chartRef.current = new Chart(canvasRef.current.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: top.map(c => c.name.substring(0, 14)),
+            datasets: [{
+              label: 'Receita', data: top.map(c => c.revenue),
+              backgroundColor: ['#0ea5e9', '#38bdf8', '#7dd3fc', '#bae6fd', '#8b5cf6', '#a78bfa', '#c4b5fd', '#ddd6fe'],
+              borderRadius: 6, borderSkipped: false
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: '#111d2e', borderColor: '#1e3048', borderWidth: 1, titleColor: '#fff', bodyColor: '#9ca3af',
+                callbacks: { label: c => ` ${fmtCur(c.raw)}` }
+              }
+            },
+            scales: {
+              x: { grid: { color: '#1e3048' }, ticks: { color: '#6b7280', font: { family: 'DM Mono', size: 10 }, callback: v => `R$${(v / 1e6).toFixed(1)}M` } },
+              y: { grid: { display: false }, ticks: { color: '#9ca3af', font: { family: 'Inter', size: 11 } } }
+            }
+          }
+        });
+        return () => { if (chartRef.current) chartRef.current.destroy(); };
+      }, [countries]);
+      return (
+        <div className="panel rounded-xl p-4">
+          <h3 className="text-sm font-semibold text-white syne flex items-center gap-2 mb-4">
+            <i className="fas fa-chart-bar text-gc-gold"></i> Top 8 Países por Receita
+          </h3>
+          <div style={{ height: 240 }}><canvas ref={canvasRef}></canvas></div>
+        </div>
+      );
+    }
+
+    function DealsTable({ deals, onUpload }) {
+      const statusMap = {
+        closed: { label: 'Fechado', bg: 'bg-gc-green/20', text: 'text-gc-green' },
+        negotiation: { label: 'Negociação', bg: 'bg-gc-gold/20', text: 'text-gc-gold' },
+        proposal: { label: 'Proposta', bg: 'bg-gc-blue/20', text: 'text-gc-blue' },
+        lost: { label: 'Perdido', bg: 'bg-gc-red/20', text: 'text-gc-red' },
+      };
+      return (
+        <div className="panel rounded-xl p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-white syne flex items-center gap-2">
+              <i className="fas fa-handshake text-gc-green"></i> Negócios Recentes
+              <span className="badge bg-gc-blue/20 text-gc-blue ml-1">{deals.length}</span>
+            </h3>
+            <button onClick={onUpload}
+              className="flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg bg-gc-blue/10 text-gc-blue border border-gc-blue/30 hover:bg-gc-blue/20 transition-all">
+              <i className="fas fa-file-excel"></i> Importar Excel
+            </button>
+          </div>
+          <div className="overflow-x-auto" style={{ maxHeight: 320, overflowY: 'auto' }}>
+            <table className="w-full text-sm">
+              <thead className="sticky top-0" style={{ background: '#111d2e' }}>
+                <tr className="text-xs text-gray-500 border-b border-gc-border">
+                  {['ID', 'Cliente', 'País', 'Valor', 'Status', 'Responsável', 'Data'].map(h => (
+                    <th key={h} className="pb-2 text-left font-medium px-2">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {deals.map((d, i) => {
+                  const st = statusMap[d.status] || statusMap.proposal;
+                  return (
+                    <tr key={i} className="trow border-b border-gc-border/40 transition-all">
+                      <td className="py-2.5 px-2 mono text-gc-blue text-xs">{d.id}</td>
+                      <td className="py-2.5 px-2 text-white font-medium">{d.client}</td>
+                      <td className="py-2.5 px-2 text-gray-300">
+                        <span className="flex items-center gap-1.5">
+                          <span className="text-base">{FLAG(d.country)}</span>
+                          <span className="text-xs">{d.country_name}</span>
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-2 mono text-gc-gold text-xs">{fmtCur(d.value)}</td>
+                      <td className="py-2.5 px-2"><span className={`badge ${st.bg} ${st.text}`}>{st.label}</span></td>
+                      <td className="py-2.5 px-2 text-gray-300 text-xs">{d.rep}</td>
+                      <td className="py-2.5 px-2 text-gray-500 text-xs mono">{d.date}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      );
+    }
+
+    function RepsTable({ reps }) {
+      return (
+        <div className="panel rounded-xl p-4">
+          <h3 className="text-sm font-semibold text-white syne flex items-center gap-2 mb-4">
+            <i className="fas fa-users text-gc-purple"></i> Performance — Equipe Comercial
+          </h3>
+          <div className="space-y-3">
+            {reps.map((r, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <span className="text-gray-400 mono text-xs w-4">{i + 1}</span>
+                <div className="w-8 h-8 rounded-full bg-gc-purple/20 border border-gc-purple/40 flex items-center justify-center text-xs text-gc-purple font-bold">
+                  {r.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-white text-xs font-medium truncate">{r.name}</span>
+                    <span className="text-gc-gold mono text-xs ml-2">{fmtCur(r.revenue)}</span>
+                  </div>
+                  <div className="h-1.5 bg-gc-dark rounded-full overflow-hidden">
+                    <div className="h-full rounded-full bg-gradient-to-r from-gc-blue to-gc-purple transition-all duration-700"
+                      style={{ width: `${r.win_rate}%` }}></div>
+                  </div>
+                </div>
+                <div className="text-right text-xs ml-2 flex-shrink-0">
+                  <div className="text-gc-green">{r.win_rate.toFixed(0)}%</div>
+                  <div className="text-gray-500">{r.deals} neg.</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    function ImportModal({ onClose, onImport }) {
+      const [file, setFile] = useState(null);
+      const [sheets, setSheets] = useState(null);
+      const [loading, setLoading] = useState(false);
+      const [error, setError] = useState('');
+      const [preview, setPreview] = useState(null);
+      const [isDragging, setIsDragging] = useState(false);
+
+      const handleFile = async f => {
+        if (!f) return;
+        const ext = f.name.split('.').pop().toLowerCase();
+        if (!['xlsx', 'xls', 'csv'].includes(ext)) { setError('Formato inválido. Use .xlsx, .xls ou .csv'); return; }
+        setError(''); setLoading(true);
+        try {
+          const parsed = await parseExcelFile(f);
+          setFile(f); setSheets(parsed);
+          const first = Object.keys(parsed)[0];
+          setPreview({ sheet: first, rows: parsed[first].slice(0, 5) });
+        } catch (e) { setError('Erro ao ler o arquivo.'); }
+        finally { setLoading(false); }
+      };
+
+      const confirmImport = () => {
+        if (!sheets) return;
+        onImport(sheets, file.name); onClose();
+      };
+
+      return (
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+          <div className="panel rounded-2xl p-6 w-full max-w-2xl mx-4 border border-gc-border" style={{ maxHeight: '90vh', overflowY: 'auto' }}>
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h2 className="text-lg font-bold text-white syne flex items-center gap-2">
+                  <i className="fas fa-file-excel text-gc-green"></i> Importar Planilha Excel
+                </h2>
+                <p className="text-xs text-gray-400 mt-0.5">Suporte a .xlsx, .xls e .csv</p>
+              </div>
+              <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gc-card">
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+            <div
+              className={`drop-zone rounded-xl p-8 text-center mb-4 ${isDragging ? 'dz-active' : ''}`}
+              onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={e => { e.preventDefault(); setIsDragging(false); handleFile(e.dataTransfer.files[0]); }}
+              onClick={() => document.getElementById('gc-file-input').click()}>
+              {loading ? (
+                <div className="text-gc-blue"><i className="fas fa-spinner fa-spin text-3xl mb-2 block"></i><p className="text-sm">Processando...</p></div>
+              ) : file ? (
+                <div className="text-gc-green"><i className="fas fa-check-circle text-3xl mb-2 block"></i>
+                  <p className="font-medium text-sm">{file.name}</p>
+                  <p className="text-xs text-gray-400 mt-1">{(file.size / 1024).toFixed(1)} KB · clique para trocar</p>
+                </div>
+              ) : (
+                <>
+                  <i className="fas fa-cloud-upload-alt text-4xl text-gray-600 mb-3 block"></i>
+                  <p className="text-gray-400 text-sm mb-1">Arraste o arquivo ou <span className="text-gc-blue">clique para selecionar</span></p>
+                  <p className="text-xs text-gray-600">.xlsx · .xls · .csv</p>
+                </>
+              )}
+              <input id="gc-file-input" type="file" accept=".xlsx,.xls,.csv" className="hidden"
+                onChange={e => handleFile(e.target.files[0])} />
+            </div>
+            {error && <div className="flex items-center gap-2 text-gc-red text-xs mb-4 p-3 rounded-lg bg-gc-red/10 border border-gc-red/20"><i className="fas fa-exclamation-circle"></i> {error}</div>}
+            {sheets && (
+              <div className="mb-4">
+                <p className="text-xs text-gray-400 mb-2 uppercase tracking-wider">Abas encontradas:</p>
+                <div className="flex flex-wrap gap-2">
+                  {Object.keys(sheets).map(s => (
+                    <button key={s} onClick={() => setPreview({ sheet: s, rows: sheets[s].slice(0, 5) })}
+                      className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${preview?.sheet === s ? 'bg-gc-blue/20 text-gc-blue border-gc-blue/40' : 'bg-gc-card text-gray-400 border-gc-border hover:border-gc-blue/30'}`}>
+                      {s} <span className="text-gray-500 ml-1">({sheets[s].length} linhas)</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {preview && preview.rows.length > 0 && (
+              <div className="mb-5">
+                <p className="text-xs text-gray-400 mb-2 uppercase tracking-wider">Pré-visualização — <span className="text-gc-blue">{preview.sheet}</span></p>
+                <div className="overflow-x-auto rounded-lg border border-gc-border">
+                  <table className="w-full text-xs">
+                    <thead><tr style={{ background: '#0d1520' }}>
+                      {Object.keys(preview.rows[0] || {}).slice(0, 7).map(k => (
+                        <th key={k} className="px-3 py-2 text-left text-gray-400 border-b border-gc-border font-medium whitespace-nowrap">{k}</th>
+                      ))}
+                    </tr></thead>
+                    <tbody>
+                      {preview.rows.map((row, i) => (
+                        <tr key={i} className="border-b border-gc-border/40">
+                          {Object.values(row).slice(0, 7).map((v, j) => (
+                            <td key={j} className="px-3 py-2 text-gray-300 mono max-w-xs truncate">{String(v)}</td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+            <div className="p-3 rounded-lg bg-gc-blue/5 border border-gc-blue/20 mb-5 text-xs text-gray-400 flex items-start gap-2">
+              <i className="fas fa-info-circle text-gc-blue mt-0.5 flex-shrink-0"></i>
+              <span>Colunas reconhecidas: <span className="text-white">cliente, país, receita/valor, status, responsável, data</span>. Os dados são integrados automaticamente.</span>
+            </div>
+            <div className="flex gap-3 justify-end">
+              <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-gray-400 border border-gc-border hover:border-gray-500 transition-all">Cancelar</button>
+              <button onClick={confirmImport} disabled={!sheets}
+                className="px-5 py-2 rounded-lg text-sm font-medium bg-gc-blue hover:bg-gc-blue2 text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2">
+                <i className="fas fa-check"></i> Importar Dados
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function Toast({ msg, type, onDismiss }) {
+      useEffect(() => { const t = setTimeout(onDismiss, 5000); return () => clearTimeout(t); }, []);
+      const cls = { success: 'bg-gc-green/20 border-gc-green/40 text-gc-green', error: 'bg-gc-red/20 border-gc-red/40 text-gc-red', info: 'bg-gc-blue/20 border-gc-blue/40 text-gc-blue' }[type];
+      const icon = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' }[type];
+      return (
+        <div className={`toast p-4 rounded-xl border flex items-center gap-3 text-sm shadow-2xl ${cls}`} style={{ maxWidth: 380 }}>
+          <i className={`fas ${icon} flex-shrink-0`}></i>
+          <span className="text-white flex-1">{msg}</span>
+          <button onClick={onDismiss} className="opacity-60 hover:opacity-100 flex-shrink-0"><i className="fas fa-times text-xs"></i></button>
+        </div>
+      );
+    }
+
+    function Ticker({ deals }) {
+      const items = deals.filter(d => d.status === 'closed').slice(0, 8);
+      if (!items.length) return null;
+      const content = items.map(d => `${FLAG(d.country)} ${d.client} — ${fmtCur(d.value)} ✓`).join('    ·    ');
+      return (
+        <div className="border-b border-gc-border py-2 px-4 ticker-wrap" style={{ background: '#060b14ee' }}>
+          <div className="ticker-inner text-xs text-gc-green mono">
+            <span>🟢 NEGÓCIOS FECHADOS &nbsp;&nbsp;{content}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{content}</span>
+          </div>
+        </div>
+      );
+    }
+
+    /* ══════════════════════════════════════════
+       BOOT TRANSITION
+    ══════════════════════════════════════════ */
+    const BOOT_LINES = [
+      { t: 150, text: '> Inicializando Grupo Conecta Platform...', cls: '' },
+      { t: 420, text: '> Verificando credenciais de acesso...', cls: '' },
+      { t: 680, text: '✔ Autenticação bem-sucedida', cls: 'ok' },
+      { t: 920, text: '> Carregando módulos comerciais...', cls: '' },
+      { t: 1100, text: '✔ CRM Engine v2.0 pronto', cls: 'ok' },
+      { t: 1280, text: '> Sincronizando dados internacionais...', cls: '' },
+      { t: 1480, text: '✔ 28 mercados conectados', cls: 'ok' },
+      { t: 1640, text: '> Inicializando mapa geoespacial...', cls: '' },
+      { t: 1820, text: '✔ Mapa global carregado', cls: 'ok' },
+      { t: 1980, text: '> Aplicando permissões de usuário...', cls: '' },
+      { t: 2150, text: '✔ Acesso liberado · Carregando dashboard', cls: 'ok' },
+    ];
+
+    function BootTransition({ user, onDone }) {
+      const [lines, setLines] = useState([]);
+      const [pct, setPct] = useState(0);
+      const [barDone, setBarDone] = useState(false);
+      const [fadingOut, setFadingOut] = useState(false);
+
+      useEffect(() => {
+        BOOT_LINES.forEach(({ t, text, cls }) => {
+          setTimeout(() => setLines(prev => [...prev, { text, cls, id: t }]), t);
+        });
+        // Smooth bar progress
+        const steps = [
+          { at: 100, v: 8 }, { at: 300, v: 18 }, { at: 550, v: 32 }, { at: 800, v: 50 },
+          { at: 1050, v: 63 }, { at: 1300, v: 74 }, { at: 1550, v: 84 }, { at: 1800, v: 93 }, { at: 2050, v: 100 }
+        ];
+        steps.forEach(({ at, v }) => setTimeout(() => setPct(v), at));
+        setTimeout(() => setBarDone(true), 2100);
+        setTimeout(() => setFadingOut(true), 2700);
+        setTimeout(() => onDone(), 3400);
+      }, []);
+
+      return (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 500,
+          background: '#060b14',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          opacity: fadingOut ? 0 : 1,
+          transition: fadingOut ? 'opacity .7s ease' : 'opacity .3s ease',
+          overflow: 'hidden'
+        }}>
+          {/* Sweep */}
+          <div style={{
+            position: 'absolute', top: 0, bottom: 0, width: 240,
+            background: 'linear-gradient(90deg,transparent,rgba(14,165,233,0.05),transparent)',
+            animation: 'bootSweep 1.8s ease-out .4s forwards',
+            pointerEvents: 'none'
+          }}></div>
+
+          {/* Ring bursts */}
+          {[0, .3, .6].map((delay, i) => (
+            <div key={i} style={{
+              position: 'absolute', top: '50%', left: '50%',
+              width: 120, height: 120, borderRadius: '50%',
+              border: `1px solid rgba(${i === 0 ? '14,165,233' : i === 1 ? '139,92,246' : '245,158,11'},.5)`,
+              animation: `bootRingExpand 1.4s ease-out ${delay}s forwards`,
+              transformOrigin: 'center'
+            }}></div>
+          ))}
+
+          {/* Corner brackets */}
+          {[{ t: 28, l: 28, bTop: true, bLeft: true }, { t: 28, r: 28, bTop: true, bRight: true },
+          { b: 28, l: 28, bBot: true, bLeft: true }, { b: 28, r: 28, bBot: true, bRight: true }].map((p, i) => (
+            <div key={i} style={{
+              position: 'absolute',
+              top: p.t, bottom: p.b, left: p.l, right: p.r,
+              width: 24, height: 24,
+              borderTop: p.bTop ? '1px solid rgba(14,165,233,.35)' : 'none',
+              borderBottom: p.bBot ? '1px solid rgba(14,165,233,.35)' : 'none',
+              borderLeft: p.bLeft ? '1px solid rgba(14,165,233,.35)' : 'none',
+              borderRight: p.bRight ? '1px solid rgba(14,165,233,.35)' : 'none',
+            }}></div>
+          ))}
+
+          {/* Timestamp top right */}
+          <div style={{
+            position: 'absolute', top: 28, right: 64,
+            fontFamily: "'DM Mono',monospace", fontSize: 10, color: '#1a3a50', letterSpacing: '0.05em'
+          }}>{new Date().toISOString().replace('T', ' ').slice(0, 19)} UTC</div>
+
+          {/* CENTER LOGO */}
+          <div style={{
+            textAlign: 'center', position: 'relative', zIndex: 2,
+            animation: 'bootLogoIn .7s cubic-bezier(.34,1.56,.64,1) .1s both'
+          }}>
+            <div style={{ position: 'relative', width: 88, height: 88, margin: '0 auto 22px' }}>
+              <div style={{
+                width: 88, height: 88, borderRadius: 24,
+                background: 'linear-gradient(135deg,#0ea5e9,#3b82f6,#8b5cf6)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 0 50px rgba(14,165,233,.6),0 0 100px rgba(14,165,233,.2)',
+              }}>
+                <i className="fas fa-network-wired" style={{ color: '#fff', fontSize: 36 }}></i>
+              </div>
+              {/* Spinning ring around logo */}
+              <div style={{
+                position: 'absolute', inset: -6, borderRadius: 30,
+                border: '1px solid rgba(14,165,233,.3)',
+                animation: 'rotateBg 3s linear infinite'
+              }}></div>
+              <div style={{
+                position: 'absolute', inset: -12, borderRadius: 36,
+                border: '1px dashed rgba(139,92,246,.2)',
+                animation: 'rotateBg 6s linear infinite reverse'
+              }}></div>
+            </div>
+
+            <h2 className="syne" style={{ color: '#fff', fontSize: 28, fontWeight: 800, letterSpacing: '0.06em', lineHeight: 1 }}>
+              GRUPO <span style={{ color: '#0ea5e9' }}>CONECTA</span>
+            </h2>
+            <p style={{ color: '#2d5a7a', fontSize: 11, marginTop: 8, fontFamily: "'DM Mono',monospace", letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+              Commercial Intelligence Platform
+            </p>
+
+            {/* Progress bar */}
+            <div style={{
+              width: 360, height: 3, borderRadius: 99, margin: '28px auto 0',
+              background: 'rgba(14,165,233,0.12)', overflow: 'hidden'
+            }}>
+              <div style={{
+                height: '100%', borderRadius: 99,
+                background: 'linear-gradient(90deg,#0ea5e9,#8b5cf6,#38bdf8)',
+                width: `${pct}%`,
+                transition: 'width .35s cubic-bezier(.4,0,.2,1)',
+                boxShadow: '0 0 8px rgba(14,165,233,.6)'
+              }}></div>
+            </div>
+            <div style={{
+              display: 'flex', justifyContent: 'space-between',
+              width: 360, margin: '6px auto 0'
+            }}>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: '#2d5a7a' }}>{pct}%</span>
+              <span style={{
+                fontFamily: "'DM Mono',monospace", fontSize: 10, color: barDone ? '#10b981' : '#2d5a7a',
+                animation: barDone ? 'bootTextBlink .5s ease 2' : 'none'
+              }}>
+                {barDone ? `✔ Bem-vindo, ${user.name}` : 'Carregando módulos...'}
+              </span>
+            </div>
+          </div>
+
+          {/* Boot log terminal */}
+          <div style={{
+            position: 'absolute', bottom: 52, left: '50%', transform: 'translateX(-50%)',
+            width: 460, display: 'flex', flexDirection: 'column', gap: 3, zIndex: 2
+          }}>
+            {lines.map((l, i) => (
+              <p key={l.id} className={`boot-line ${l.cls}`} style={{ animationDelay: `${i * 0.015}s` }}>
+                {l.text}
+              </p>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    /* ══════════════════════════════════════════
+       MAIN APP
+    ══════════════════════════════════════════ */
+    function App() {
+      const [loggedUser, setLoggedUser] = useState(null);
+      const [loginExiting, setLoginExiting] = useState(false);
+      const [booting, setBooting] = useState(false);
+      const [dashReady, setDashReady] = useState(false);
+      const [data, setData] = useState(generateDemo());
+      const [showImport, setShowImport] = useState(false);
+      const [toast, setToast] = useState(null);
+      const [activeTab, setActiveTab] = useState('overview');
+      const [now, setNow] = useState(new Date().toLocaleTimeString('pt-BR'));
+
+      useEffect(() => {
+        const t = setInterval(() => setNow(new Date().toLocaleTimeString('pt-BR')), 1000);
+        return () => clearInterval(t);
+      }, []);
+
+      // Called when login button succeeds
+      const handleLogin = user => {
+        setLoginExiting(true);          // shrink/blur login card
+        setTimeout(() => {
+          setLoggedUser(user);
+          setBooting(true);             // show boot overlay
+        }, 600);
+      };
+
+      // Called when boot overlay finishes
+      const handleBootDone = () => {
+        setBooting(false);
+        setDashReady(true);             // reveal dashboard with animation
+      };
+
+      const handleImport = (sheets, filename) => {
+        const allRows = Object.values(sheets).flat();
+        const newDeals = [];
+        allRows.forEach((row, i) => {
+          const get = names => {
+            for (const n of names) {
+              const k = Object.keys(row).find(k => k.toLowerCase().trim() === n);
+              if (k && row[k] !== '') return row[k];
+            }
+            return null;
+          };
+          const client = get(['cliente', 'client', 'company', 'empresa', 'nome', 'name']);
+          const country = get(['país', 'pais', 'country', 'country_code', 'código_país']);
+          const value = parseFloat(String(get(['receita', 'revenue', 'valor', 'value', 'amount']) || '').replace(/[^0-9.,]/g, '').replace(',', '.')) || 0;
+          const status = (get(['status', 'situação', 'situacao']) || 'proposal').toLowerCase();
+          const rep = get(['responsável', 'responsavel', 'rep', 'vendedor', 'seller', 'consultor']);
+          const date = get(['data', 'date', 'data_fechamento', 'close_date']);
+          if (client) {
+            newDeals.push({
+              id: `IMP-${String(i + 1).padStart(4, '0')}`,
+              client: String(client),
+              country: String(country || 'BR').substring(0, 2).toUpperCase(),
+              country_name: String(country || 'Brasil'),
+              value,
+              status: ['closed', 'fechado', 'won', 'ganho'].some(s => String(status).includes(s)) ? 'closed'
+                : ['neg', 'negotiat'].some(s => String(status).includes(s)) ? 'negotiation' : 'proposal',
+              rep: String(rep || '—'),
+              date: String(date || new Date().toISOString().slice(0, 10)),
+              segment: value > 500000 ? 'Enterprise' : value > 100000 ? 'Mid-Market' : 'SMB',
+            });
+          }
+        });
+        if (newDeals.length > 0) {
+          setData(prev => ({
+            ...prev,
+            deals: [...newDeals, ...prev.deals].slice(0, 60),
+            kpis: {
+              ...prev.kpis,
+              total_clients: prev.kpis.total_clients + newDeals.length,
+              open_deals: prev.kpis.open_deals + newDeals.filter(d => d.status !== 'closed').length,
+              closed_ytd: prev.kpis.closed_ytd + newDeals.filter(d => d.status === 'closed').length,
+              total_revenue: prev.kpis.total_revenue + newDeals.reduce((s, d) => s + d.value, 0),
+            }
+          }));
+          setToast({ msg: `${newDeals.length} registros importados de "${filename}"!`, type: 'success' });
+        } else {
+          setToast({ msg: 'Arquivo lido, mas nenhum dado reconhecido. Verifique as colunas.', type: 'info' });
+        }
+      };
+
+      // Render login (with optional exit animation)
+      if (!loggedUser) return (
+        <div className={loginExiting ? 'login-exiting' : ''} style={{ transition: 'none' }}>
+          <LoginScreen onLogin={handleLogin} />
+        </div>
+      );
+
+      // Render boot sequence
+      if (booting) return <BootTransition user={loggedUser} onDone={handleBootDone} />;
+
+      const tabs = [
+        { id: 'overview', label: 'Visão Geral', icon: 'fa-th-large' },
+        { id: 'map', label: 'Mapa Global', icon: 'fa-globe' },
+        { id: 'deals', label: 'Negócios', icon: 'fa-handshake' },
+        { id: 'team', label: 'Equipe', icon: 'fa-users' },
+      ];
+
+      const { kpis, countries, monthly, segments, deals, reps } = data;
+
+      return (
+        <div className={`min-h-screen${dashReady ? ' dash-entering' : ''}`} style={{ position: 'relative', zIndex: 1 }}>
+          {/* Header */}
+          <header className="border-b border-gc-border" style={{ background: '#060b14f0', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 100 }}>
+            <div className="header-line"></div>
+            <div className="flex items-center justify-between px-6 py-3">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center glow-blue"
+                  style={{ background: 'linear-gradient(135deg,#0ea5e9,#3b82f6)' }}>
+                  <i className="fas fa-network-wired text-white text-lg"></i>
+                </div>
+                <div>
+                  <h1 className="text-lg font-bold text-white syne tracking-wide leading-none">
+                    GRUPO <span className="text-gc-blue">CONECTA</span>
+                  </h1>
+                  <p className="text-xs text-gray-500 mt-0.5">Commercial Intelligence Dashboard</p>
+                </div>
+              </div>
+
+              <nav className="hidden md:flex items-center gap-1">
+                {tabs.map(t => (
+                  <button key={t.id} onClick={() => setActiveTab(t.id)}
+                    className={`nav-item px-4 py-2 rounded-lg text-xs font-medium flex items-center gap-2 ${activeTab === t.id ? 'active' : ''}`}>
+                    <i className={`fas ${t.icon}`}></i> {t.label}
+                  </button>
+                ))}
+              </nav>
+
+              <div className="flex items-center gap-3">
+                <button onClick={() => setShowImport(true)}
+                  className="flex items-center gap-2 text-xs px-4 py-2 rounded-lg bg-gc-green/10 text-gc-green border border-gc-green/30 hover:bg-gc-green/20 transition-all">
+                  <i className="fas fa-file-excel"></i><span className="hidden sm:inline">Importar Excel</span>
+                </button>
+                {/* User badge */}
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gc-border bg-gc-card">
+                  <div className="w-6 h-6 rounded-full bg-gc-blue/20 border border-gc-blue/40 flex items-center justify-center">
+                    <i className="fas fa-user text-gc-blue" style={{ fontSize: 10 }}></i>
+                  </div>
+                  <div className="hidden sm:block">
+                    <p className="text-white text-xs font-medium leading-none">{loggedUser.name}</p>
+                    <p className="text-gray-500 text-xs">{loggedUser.role}</p>
+                  </div>
+                  <button onClick={() => { setLoggedUser(null); setLoginExiting(false); setBooting(false); setDashReady(false); }} title="Sair"
+                    className="ml-1 text-gray-600 hover:text-gc-red transition-colors">
+                    <i className="fas fa-sign-out-alt text-xs"></i>
+                  </button>
+                </div>
+                <div className="text-right hidden lg:block">
+                  <div className="flex items-center gap-2 justify-end">
+                    <span className="w-2 h-2 rounded-full bg-gc-green pulse-dot"></span>
+                    <span className="text-xs text-gray-300 mono">{now}</span>
+                  </div>
+                  <p className="text-xs text-gray-600 mt-0.5">{new Date().toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <Ticker deals={deals} />
+
+          <main className="p-6 space-y-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <KPICard title="Receita Total YTD" value={fmtCur(kpis.total_revenue)} icon="fas fa-dollar-sign" accent="gold" trend={11.3} sub="Acumulado 2025/2026" />
+              <KPICard title="Clientes Ativos" value={fmtNum(kpis.total_clients)} icon="fas fa-building" accent="blue" trend={8.4} sub={`${kpis.total_countries} países`} />
+              <KPICard title="Negócios Abertos" value={fmtNum(kpis.open_deals)} icon="fas fa-funnel-dollar" accent="purple" sub="Pipeline ativo" />
+              <KPICard title="Fechados YTD" value={fmtNum(kpis.closed_ytd)} icon="fas fa-check-double" accent="green" trend={15.7} sub={`Conv. ${fmtPct(kpis.conversion_rate)}`} />
+            </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <KPICard title="Ticket Médio" value={fmtCur(kpis.avg_deal)} icon="fas fa-receipt" accent="blue" sub="Por negócio fechado" />
+              <KPICard title="Taxa de Conversão" value={fmtPct(kpis.conversion_rate)} icon="fas fa-percentage" accent="green" trend={2.1} sub="Proposta → Fechado" />
+              <KPICard title="Países Atendidos" value={kpis.total_countries} icon="fas fa-globe-americas" accent="purple" sub="Clientes internacionais" />
+              <KPICard title="NPS Score" value={kpis.nps} icon="fas fa-star" accent="gold" trend={4.2} sub="Satisfação de clientes" />
+            </div>
+
+            {activeTab === 'overview' && (
+              <>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="lg:col-span-2"><RevenueChart data={monthly} /></div>
+                  <SegmentChart data={segments} />
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <CountryBar countries={countries} /><RepsTable reps={reps} />
+                </div>
+                <DealsTable deals={deals.slice(0, 6)} onUpload={() => setShowImport(true)} />
+              </>
+            )}
+
+            {activeTab === 'map' && (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2"><WorldMap countries={countries} /></div>
+                <div className="panel rounded-xl p-4">
+                  <h3 className="text-sm font-semibold text-white syne flex items-center gap-2 mb-4">
+                    <i className="fas fa-fire text-gc-red"></i> Ranking por Receita
+                  </h3>
+                  <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+                    {[...countries].sort((a, b) => b.revenue - a.revenue).map((c, i) => {
+                      const max = Math.max(...countries.map(x => x.revenue));
+                      const pct = (c.revenue / max) * 100;
+                      return (
+                        <div key={c.code} className="flex items-center gap-3">
+                          <span className="text-gray-500 mono text-xs w-4">{i + 1}</span>
+                          <span className="text-base">{FLAG(c.code)}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between mb-1">
+                              <span className="text-white text-xs truncate">{c.name}</span>
+                              <span className="text-gc-gold mono text-xs ml-2 flex-shrink-0">{fmtCur(c.revenue)}</span>
+                            </div>
+                            <div className="h-1.5 bg-gc-dark rounded-full overflow-hidden">
+                              <div className="h-full rounded-full bg-gradient-to-r from-gc-blue to-gc-blue2" style={{ width: `${pct}%` }}></div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'deals' && <DealsTable deals={deals} onUpload={() => setShowImport(true)} />}
+
+            {activeTab === 'team' && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <RepsTable reps={reps} />
+                <div className="panel rounded-xl p-4">
+                  <h3 className="text-sm font-semibold text-white syne flex items-center gap-2 mb-4">
+                    <i className="fas fa-trophy text-gc-gold"></i> Metas vs Realizado — 2026
+                  </h3>
+                  <div className="space-y-4">
+                    {reps.map((r, i) => {
+                      const target = 2500000 + i * 300000;
+                      const pct = Math.min((r.revenue / target) * 100, 100);
+                      const over = r.revenue >= target;
+                      return (
+                        <div key={i}>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-white text-xs font-medium">{r.name}</span>
+                            <div className="flex items-center gap-3 text-xs">
+                              <span className="text-gray-400">Meta: {fmtCur(target)}</span>
+                              <span className={over ? 'text-gc-green' : 'text-gc-gold'}>{pct.toFixed(0)}%</span>
+                            </div>
+                          </div>
+                          <div className="h-3 bg-gc-dark rounded-full overflow-hidden">
+                            <div className={`h-full rounded-full transition-all duration-700 ${over ? 'bg-gradient-to-r from-gc-green to-emerald-400' : 'bg-gradient-to-r from-gc-gold to-amber-400'}`}
+                              style={{ width: `${pct}%` }}></div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+          </main>
+
+          <footer className="border-t border-gc-border px-6 py-3 flex items-center justify-between text-xs text-gray-600">
+            <span className="syne">© 2025 Grupo Conecta — Commercial Intelligence Platform · <span style={{ color: '#2d4a6b' }}>Arthur &amp; Rayan</span></span>
+            <span className="mono text-gray-700">v2.0.0 · 2025/2026</span>
+          </footer>
+
+          {showImport && <ImportModal onClose={() => setShowImport(false)} onImport={handleImport} />}
+          {toast && <Toast msg={toast.msg} type={toast.type} onDismiss={() => setToast(null)} />}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+
+</html>
